@@ -430,7 +430,7 @@ public:
         }
 
         ScreenFlip();
-    }
+}
 };
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -442,6 +442,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     SetDrawScreen(DX_SCREEN_BACK);
     GameManager& game = GameManager::Instance();
 
+// プログラムの実行: Ctrl + F5 または [デバッグ] > [デバッグなしで開始] メニュー
+// プログラムのデバッグ: F5 または [デバッグ] > [デバッグの開始] メニュー
     while (ProcessMessage() == 0 &&
         game.GetState() != GameState::Exit) {
         KeyInput::Instance().Update(); // 毎フレーム1回だけ更新
