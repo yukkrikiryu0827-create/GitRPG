@@ -148,6 +148,38 @@ public:
 };
 
 // ============================================================
+// キー入力：押した瞬間（キー押下エッジ）を検出
+// 毎フレーム Update() を1回呼び、Pressed() で判定します。
+// ============================================================
+
+class KeyInput {
+private:
+    std::array<char, 256> current{};
+    std::array<char, 256> previous{};
+
+    KeyInput() = default;
+    KeyInput(const KeyInput&) = delete;
+    KeyInput& operator=(const KeyInput&) = delete;
+
+public:
+    static KeyInput& Instance() {
+        static KeyInput instance;
+        return instance;
+    }
+
+    void Update() {
+        previous = current;
+        GetHitKeyStateAll(current.data());
+    }
+
+    bool Pressed(int key) const {
+        if (key < 0 || key >= static_cast<int>(current.size())) return false;
+        return current[static_cast<std::size_t>(key)] != 0 &&
+            previous[static_cast<std::size_t>(key)] == 0;
+    }
+};
+
+// ============================================================
 // 有限状態機械（FSM）
 // ============================================================
 
@@ -170,24 +202,10 @@ private:
     Player player{ "勇者" };
     Enemy enemy = EnemyFactory::Create("slime");
     MessagePool messagePool;
-    bool keyWait = false;
 
     GameManager() = default;
     GameManager(const GameManager&) = delete;
     GameManager& operator=(const GameManager&) = delete;
-
-    bool Pressed(int key) {
-        if (CheckHitKey(key)) {
-            if (!keyWait) {
-                keyWait = true;
-                return true;
-            }
-        }
-        else if (keyWait) {
-            keyWait = false;
-        }
-        return false;
-    }
 
     void Log(const std::string& text) {
         messagePool.Add(text);
@@ -268,17 +286,17 @@ public:
     void Update() {
         switch (state) {
         case GameState::Title:
-            if (Pressed(KEY_INPUT_Z) || Pressed(KEY_INPUT_RETURN)) {
+            if (KeyInput::Instance().Pressed(KEY_INPUT_Z) || KeyInput::Instance().Pressed(KEY_INPUT_RETURN)) {
                 player = Player("勇者");
                 state = GameState::Explore;
             }
-            if (Pressed(KEY_INPUT_X) || Pressed(KEY_INPUT_ESCAPE)) state = GameState::Exit;
+            if (KeyInput::Instance().Pressed(KEY_INPUT_X) || KeyInput::Instance().Pressed(KEY_INPUT_ESCAPE)) state = GameState::Exit;
             break;
 
         case GameState::Explore:
-            if (Pressed(KEY_INPUT_1)) StartBattle("slime");
-            else if (Pressed(KEY_INPUT_2)) StartBattle("goblin");
-            else if (Pressed(KEY_INPUT_3)) {
+            if (KeyInput::Instance().Pressed(KEY_INPUT_1)) StartBattle("slime");
+            else if (KeyInput::Instance().Pressed(KEY_INPUT_2)) StartBattle("goblin");
+            else if (KeyInput::Instance().Pressed(KEY_INPUT_3)) {
                 if (player.gold >= POTION.price) {
                     player.gold -= POTION.price;
                     ++player.potions;
@@ -288,15 +306,15 @@ public:
                     Log("ゴールドが足りない！");
                 }
             }
-            else if (Pressed(KEY_INPUT_4)) StartBattle("dragon");
-            else if (Pressed(KEY_INPUT_ESCAPE)) state = GameState::Title;
+            else if (KeyInput::Instance().Pressed(KEY_INPUT_4)) StartBattle("dragon");
+            else if (KeyInput::Instance().Pressed(KEY_INPUT_ESCAPE)) state = GameState::Title;
             break;
 
         case GameState::Battle:
-            if (Pressed(KEY_INPUT_1)) {
+            if (KeyInput::Instance().Pressed(KEY_INPUT_1)) {
                 PlayerAttack();
             }
-            else if (Pressed(KEY_INPUT_2)) {
+            else if (KeyInput::Instance().Pressed(KEY_INPUT_2)) {
                 if (player.UsePotion()) Log("ポーションを使って回復した！");
                 else Log("ポーションがない、またはHPが満タンだ！");
                 // 回復行動後、敵も攻撃する
@@ -307,7 +325,7 @@ public:
                     if (!player.IsAlive()) state = GameState::GameOver;
                 }
             }
-            else if (Pressed(KEY_INPUT_3) && enemy.id != "dragon") {
+            else if (KeyInput::Instance().Pressed(KEY_INPUT_3) && enemy.id != "dragon") {
                 Log("戦闘から逃げ出した！");
                 state = GameState::Explore;
             }
@@ -315,11 +333,11 @@ public:
 
         case GameState::Clear:
         case GameState::GameOver:
-            if (Pressed(KEY_INPUT_Z) || Pressed(KEY_INPUT_RETURN)) {
+            if (KeyInput::Instance().Pressed(KEY_INPUT_Z) || KeyInput::Instance().Pressed(KEY_INPUT_RETURN)) {
                 state = GameState::Title;
                 messagePool.Clear();
             }
-            if (Pressed(KEY_INPUT_X) || Pressed(KEY_INPUT_ESCAPE)) state = GameState::Exit;
+            if (KeyInput::Instance().Pressed(KEY_INPUT_X) || KeyInput::Instance().Pressed(KEY_INPUT_ESCAPE)) state = GameState::Exit;
             break;
 
         case GameState::Exit:
@@ -426,6 +444,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
     while (ProcessMessage() == 0 &&
         game.GetState() != GameState::Exit) {
+        KeyInput::Instance().Update(); // 毎フレーム1回だけ更新
         game.Update();
         game.Draw();
         WaitTimer(16);
