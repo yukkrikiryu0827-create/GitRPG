@@ -32,6 +32,8 @@ struct EnemyData
 
     int goldReward;
 
+    int def;
+
 };
 
 struct ItemData
@@ -50,11 +52,11 @@ struct ItemData
 
 constexpr std::array<EnemyData, 3> ENEMY_TABLE{ {
 
-    {"slime", "スライム", 18, 5, 8, 4},
+    {"slime", "スライム", 18, 5, 8, 4,5},
 
-    {"goblin", "ゴブリン", 30, 8, 15, 9},
+    {"goblin", "ゴブリン", 30, 8, 15, 9,10},
 
-    {"dragon", "ドラゴン", 75, 13, 50, 40}
+    {"dragon", "ドラゴン", 75, 13, 50, 40,20}
 
 } };
 
@@ -80,7 +82,9 @@ public:
 
     int attack;
 
-    Character(const std::string& n, int maxHpValue, int attackValue);
+    int def;
+
+    Character(const std::string& n, int maxHpValue, int attackValue,int defValue);
 
     bool IsAlive() const;
 

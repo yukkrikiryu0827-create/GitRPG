@@ -5,11 +5,13 @@
 Character::Character(
     const std::string& n,
     int maxHpValue,
-    int attackValue)
+    int attackValue,
+    int defValue)
     : name(n),
     maxHp(maxHpValue),
     hp(maxHpValue),
-    attack(attackValue)
+    attack(attackValue),
+	def(defValue)
 {
 }
 bool Character::IsAlive() const
@@ -18,7 +20,7 @@ bool Character::IsAlive() const
 }
 int Character::TakeDamage(int damage)
 {
-    int actual = (std::max)(0, damage);
+    int actual = (std::max)(0, damage - def);
     hp = (std::max)(0, hp - actual);
     return actual;
 }
@@ -26,18 +28,22 @@ int Character::TakeDamage(int damage)
 // Player
 // ==============================
 Player::Player(const std::string& name)
-    : Character(name, 100, 12)
+    : Character(name, 100, 12,4)
 {
 }
 void Player::GainExp(int amount)
 {
     exp += amount;
+    
+
+    //  レベルアップした時の処理
     while (exp >= level * 20)
     {
         exp -= level * 20;
         ++level;
         maxHp += 10;
         attack += 3;
+        def += 2;   
         hp = maxHp;
        // std::cout << "レベルアップ！ Lv." << level << "\n";
     }
@@ -54,7 +60,7 @@ bool Player::UsePotion()
 // Enemy
 // ==============================
 Enemy::Enemy(const EnemyData& data)
-    : Character(data.name, data.maxHp, data.attack),
+    : Character(data.name, data.maxHp, data.attack,data.def ),
     id(data.id),
     expReward(data.expReward),
     goldReward(data.goldReward)
@@ -187,6 +193,8 @@ void GameModel::PlayerUsePotion()
 }
 void GameModel::BuyPotion()
 {
+
+	// ポーションを購入する処理
     if (player.gold >= POTION.price)
     {
         player.gold -= POTION.price;

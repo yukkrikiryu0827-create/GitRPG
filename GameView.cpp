@@ -18,6 +18,7 @@ void GameView::DrawTitle()
 
 }
 
+//  ÉçÉOÇÃï\é¶
 void GameView::DrawPlayerStatus(const Player& player)
 
 {
@@ -32,6 +33,8 @@ void GameView::DrawPlayerStatus(const Player& player)
         << " / " << player.maxHp << "\n";
 
     std::cout << "ATK  : " << player.attack << "\n";
+    
+    std::cout << "DEF  : " << player.def << "\n";
 
     std::cout << "EXP  : " << player.exp << "\n";
 
