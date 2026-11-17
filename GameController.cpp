@@ -139,6 +139,11 @@ void GameController::Run()
 
                 break;
 
+            case 4:
+                model.PlayerSkill();
+
+                break;
+
             }
 
             break;

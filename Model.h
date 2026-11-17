@@ -34,6 +34,7 @@ struct EnemyData
 
     int def;
 
+
 };
 
 struct ItemData
@@ -84,7 +85,9 @@ public:
 
     int def;
 
-    Character(const std::string& n, int maxHpValue, int attackValue,int defValue);
+    int mp;
+
+    Character(const std::string& n, int maxHpValue, int attackValue,int defValue,int mpValue);
 
     bool IsAlive() const;
 
@@ -247,6 +250,8 @@ public:
     void StartBattle(const std::string& id);
 
     void PlayerAttack();
+
+	void PlayerSkill();
 
     void PlayerUsePotion();
 

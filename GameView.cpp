@@ -32,6 +32,8 @@ void GameView::DrawPlayerStatus(const Player& player)
     std::cout << "HP   : " << player.hp
         << " / " << player.maxHp << "\n";
 
+	std::cout << "MP   : " << player.mp << "\n";
+
     std::cout << "ATK  : " << player.attack << "\n";
     
     std::cout << "DEF  : " << player.def << "\n";
@@ -110,6 +112,8 @@ void GameView::DrawBattle(const GameModel& model)
     if (enemy.id != "dragon")
 
         std::cout << "3 : 逃げる\n";
+
+	std::cout << "4 : スキル（MP 10）\n";
 
     DrawMessages(model);
 

@@ -6,12 +6,14 @@ Character::Character(
     const std::string& n,
     int maxHpValue,
     int attackValue,
-    int defValue)
+    int defValue,
+    int mpValue)
     : name(n),
     maxHp(maxHpValue),
     hp(maxHpValue),
     attack(attackValue),
-	def(defValue)
+	def(defValue),
+    mp(mpValue)
 {
 }
 bool Character::IsAlive() const
@@ -28,7 +30,7 @@ int Character::TakeDamage(int damage)
 // Player
 // ==============================
 Player::Player(const std::string& name)
-    : Character(name, 100, 12,4)
+    : Character(name, 100, 12,4,30)
 {
 }
 void Player::GainExp(int amount)
@@ -45,11 +47,13 @@ void Player::GainExp(int amount)
         attack += 3;
         def += 2;   
         hp = maxHp;
+        mp = 30;
        // std::cout << "レベルアップ！ Lv." << level << "\n";
     }
 }
 bool Player::UsePotion()
 {
+    // ポーションを使う処理
     if (potions <= 0 || hp == maxHp)
         return false;
     hp = (std::min)(maxHp, hp + POTION.heal);
@@ -60,7 +64,7 @@ bool Player::UsePotion()
 // Enemy
 // ==============================
 Enemy::Enemy(const EnemyData& data)
-    : Character(data.name, data.maxHp, data.attack,data.def ),
+    : Character(data.name, data.maxHp, data.attack,data.def, 0 ),
     id(data.id),
     expReward(data.expReward),
     goldReward(data.goldReward)
@@ -71,6 +75,8 @@ Enemy::Enemy(const EnemyData& data)
 // ==============================
 Enemy EnemyFactory::Create(const std::string& id)
 {
+
+	//  IDに対応する敵を生成する処理
     for (const auto& data : ENEMY_TABLE)
     {
         if (id == data.id)
@@ -176,8 +182,45 @@ void GameModel::PlayerAttack()
     if (!player.IsAlive())
         state = GameState::GameOver;
 }
+void GameModel::PlayerSkill()
+{
+    // スキルを使う処理
+    if (player.mp >= 10)
+    {
+        player.mp -= 10;
+        int damage = enemy.TakeDamage(player.attack * 2);
+        Log(player.name + "のスキル！ " +
+            enemy.name + "に" +
+            std::to_string(damage) + "ダメージ！");
+        if (!enemy.IsAlive())
+        {
+            Log(enemy.name + "を倒した！");
+            Log(std::to_string(enemy.expReward) +
+                " EXP / " +
+                std::to_string(enemy.goldReward) +
+                " Gを獲得！");
+            player.GainExp(enemy.expReward);
+            player.gold += enemy.goldReward;
+            state = (enemy.id == "dragon")
+                ? GameState::Clear
+                : GameState::Explore;
+            return;
+        }
+        int damageToPlayer = player.TakeDamage(enemy.attack);
+        Log(enemy.name + "の攻撃！ " +
+            std::to_string(damageToPlayer) +
+            "ダメージを受けた！");
+        if (!player.IsAlive())
+            state = GameState::GameOver;
+    }
+    else
+    {
+        Log("MPが足りない！");
+    }
+}
 void GameModel::PlayerUsePotion()
 {
+	// ポーションを使たログを表示する処理
     if (player.UsePotion())
         Log("ポーションを使って回復した！");
     else
@@ -208,6 +251,7 @@ void GameModel::BuyPotion()
 }
 void GameModel::EscapeBattle()
 {
+    //　逃げる時の処理
     if (enemy.id == "dragon")
         return;
     Log("戦闘から逃げ出した！");
@@ -215,6 +259,7 @@ void GameModel::EscapeBattle()
 }
 void GameModel::ReturnToTitle()
 {
+
     state = GameState::Title;
     messagePool.Clear();
 }
