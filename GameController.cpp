@@ -14,6 +14,7 @@ GameController& GameController::Instance()
 
 int GameController::Input()
 
+
 {
 
     int input;
